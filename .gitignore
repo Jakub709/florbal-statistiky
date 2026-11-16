@@ -1,0 +1,13 @@
+# lokální data a hesla – nikdy nenahrávat
+app/data/
+
+# závislosti a nástroje
+node_modules/
+.netlify/
+.claude/
+
+# dočasné soubory
+*.tmp
+~$*
+.DS_Store
+Thumbs.db

@@ -1,0 +1,19 @@
+{
+  "name": "florbal-statistiky",
+  "version": "1.0.0",
+  "description": "Statistiky hráčů pondělního florbalu – výhry, účast, pořadí a administrace.",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "import": "node scripts/import-xlsx.js",
+    "seed": "node scripts/make-seed.js",
+    "test": "node scripts/check-stats.js"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.9"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
