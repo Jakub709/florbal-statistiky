@@ -9,9 +9,11 @@ const DATA_DIR = process.env.FLORBAL_DATA_DIR || path.join(__dirname, '..', 'dat
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const PASSWORD_FILE = path.join(DATA_DIR, 'PRVNI-HESLO-ADMIN.txt');
 
+/** Načte data/db.json; pokud ještě neexistuje (čerstvý klon z GitHubu), začne z aktuálních dat v lib/seed-data.js. */
 function load() {
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  return normalize(fs.existsSync(DB_FILE) ? JSON.parse(fs.readFileSync(DB_FILE, 'utf8')) : null);
+  if (fs.existsSync(DB_FILE)) return normalize(JSON.parse(fs.readFileSync(DB_FILE, 'utf8')));
+  return normalize(JSON.parse(JSON.stringify(require('./seed-data'))));
 }
 
 function save(db) {

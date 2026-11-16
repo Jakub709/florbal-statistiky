@@ -1,11 +1,11 @@
 /**
  * API pro Netlify – stejná logika jako lokální server (lib/core.js), data v Netlify Blobs.
- * Při prvním spuštění se databáze naplní úvodními daty ze seed-data.mjs (import z Excelu).
+ * Při prvním spuštění se databáze naplní daty z lib/seed-data.js (aktuální stav z GitHubu).
  * Počáteční heslo admina: proměnná prostředí ADMIN_PASSWORD (po změně hesla v aplikaci se už nepoužívá).
  */
 import { getStore } from '@netlify/blobs';
 import core from '../../lib/core.js';
-import seed from './seed-data.mjs';
+import seed from '../../lib/seed-data.js';
 
 const store = () => getStore({ name: 'florbal', consistency: 'strong' });
 

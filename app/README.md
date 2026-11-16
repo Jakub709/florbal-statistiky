@@ -59,7 +59,13 @@ Po změně hesla se tento soubor sám smaže.
 
 ## Data
 
-Vše je v souboru `data/db.json`. Úvodní data se nahrála z Excelu příkazem:
+Lokálně je vše v souboru `data/db.json` (není v repozitáři). Pokud ještě neexistuje, aplikace začne
+z aktuálních dat v `lib/seed-data.js`, který je součástí repozitáře.
+
+- `npm run sync` – stáhne aktuální data z živého webu do `lib/seed-data.js` (pak změnu commitněte).
+- `npm run seed` – totéž, ale z lokálního `data/db.json`.
+
+Původní data šla nahrát i přímo z Excelu:
 
 ```bash
 npm run import -- "../Florbal 26-27.xlsx" --force
@@ -78,7 +84,8 @@ Aplikace běží na **https://florbal-statistiky.netlify.app** (administrace na 
 - Data na webu jsou uložená v **Netlify Blobs** (úložiště `florbal`), ne v `data/db.json`.
   Web a lokální verze jsou tedy dvě oddělené kopie dat. Přenést je mezi sebou můžete přes
   Zálohu (JSON) a Obnovu ze zálohy v administraci.
-- Při prvním spuštění se web naplnil daty z `netlify/functions/seed-data.mjs` (vytváří ho `npm run seed`).
+- Při prvním spuštění se web naplní daty z `lib/seed-data.js`. Nový web vytvořený z repozitáře
+  tak začne s daty, která v repozitáři byla naposledy uložena přes `npm run sync`.
 - Počáteční heslo admina na webu je v proměnné prostředí `ADMIN_PASSWORD` na Netlify
   a v souboru `data/NETLIFY-HESLO-ADMIN.txt`. Po změně hesla v administraci už neplatí.
 - Složku `data/` nikdy nenahrávejte na Netlify, jsou v ní lokální hesla.

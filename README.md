@@ -13,11 +13,16 @@ a administrace pro zápis nových termínů.
 ```bash
 cd app
 npm install
-npm run import -- "../Florbal 26-27.xlsx"
 npm start
 ```
 
 Pak otevřete http://localhost:3000. Při prvním spuštění se heslo admina uloží do `app/data/PRVNI-HESLO-ADMIN.txt`.
+
+## Data v repozitáři
+
+Kopie aplikace začíná s **aktuálními daty z webu** (hráči, termíny, nastavení – bez hesel).
+Jsou v souboru [app/lib/seed-data.js](app/lib/seed-data.js) a použijí se lokálně i na novém Netlify webu.
+Aktualizují se příkazem `npm run sync` ve složce `app` (stáhne data z živého webu), po kterém je potřeba změnu commitnout.
 
 Výpočty (Výhry % = výhry ÷ odehráno, Účast % = odehráno ÷ všechny zápasy, pořadí = RANK podle výher)
 odpovídají původnímu Excelu. Ověří to `npm test`.

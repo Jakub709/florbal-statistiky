@@ -116,9 +116,10 @@ if (require.main === module) {
   const file = process.argv[2];
   if (!file) { console.error('Použití: node scripts/import-xlsx.js <soubor.xlsx> [--force]'); process.exit(1); }
   const force = process.argv.includes('--force');
+  const exists = require('fs').existsSync(store.DB_FILE);
   const db = store.load();
-  if ((db.sessions.length || db.players.length) && !force) {
-    console.error('Databáze už obsahuje data. Pro přepsání hráčů a termínů přidejte --force.');
+  if (exists && (db.sessions.length || db.players.length) && !force) {
+    console.error('Lokální databáze (data/db.json) už obsahuje data. Pro přepsání hráčů a termínů přidejte --force.');
     process.exit(1);
   }
   const { players, sessions } = convert(readSheet(path.resolve(file)));

@@ -8,7 +8,8 @@
     "start": "node server.js",
     "import": "node scripts/import-xlsx.js",
     "seed": "node scripts/make-seed.js",
-    "test": "node scripts/check-stats.js"
+    "test": "node scripts/check-stats.js",
+    "sync": "node scripts/make-seed.js --from-web"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.9"

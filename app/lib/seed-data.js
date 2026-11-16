@@ -1,5 +1,7 @@
-// Úvodní data pro Netlify (vygenerováno: npm run seed). Použijí se jen při prvním spuštění.
-export default {
+// Aktuální data aplikace (hráči, termíny, nastavení) – bez hesel a tajných klíčů.
+// Generuje se příkazem `npm run sync` (z živého webu) nebo `npm run seed` (z data/db.json).
+// Nová kopie aplikace (lokálně i na Netlify) začíná z těchto dat.
+module.exports = {
   "settings": {
     "title": "Florbal",
     "season": "2026/27",
