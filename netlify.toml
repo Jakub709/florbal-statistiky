@@ -1,0 +1,7 @@
+# Aplikace je ve složce app/ – Netlify ji sestaví odtud (zbytek konfigurace je v app/netlify.toml).
+[build]
+  base = "app"
+
+# Tlačítko "Deploy to Netlify" se při vytváření webu zeptá na počáteční heslo admina.
+[template.environment]
+  ADMIN_PASSWORD = "Počáteční heslo do administrace (po přihlášení ho změňte)"

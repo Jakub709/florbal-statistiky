@@ -421,5 +421,16 @@
   themeBtn.innerHTML = UI.SUN;
   themeBtn.addEventListener('click', UI.toggleTheme);
 
-  api('/api/me').then((r) => (r.admin ? showPanel() : showLogin())).catch(() => showLogin());
+  api('/api/me')
+    .then((r) => {
+      if (r.admin) return showPanel();
+      showLogin();
+      if (r.adminConfigured === false) {
+        $('#loginError').textContent = 'Administrátor zatím není nastaven. Na Netlify přidejte proměnnou prostředí ADMIN_PASSWORD (Project configuration → Environment variables) a web znovu nasaďte.';
+      }
+    })
+    .catch(() => {
+      showLogin();
+      $('#loginError').textContent = 'Server s daty neodpovídá. Pokud jde o web na Netlify, nasaďte ho přes Git nebo tlačítko „Deploy to Netlify“, ne ručním nahráním ZIPu (to nespustí serverovou část).';
+    });
 })();

@@ -8,7 +8,20 @@ a administrace pro zápis nových termínů.
 - `app/` – aplikace (veřejný web, administrace, lokální server, Netlify Function). Návod je v [app/README.md](app/README.md).
 - `Florbal 26-27.xlsx` – původní Excelová tabulka, ze které se nahrála úvodní data.
 
-## Rychlý start
+## Vlastní kopie webu na Netlify
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Jakub709/florbal-statistiky)
+
+Tlačítko zkopíruje repozitář do vašeho GitHubu, založí web na Netlify a zeptá se na **ADMIN_PASSWORD**
+(počáteční heslo do administrace). Web začne s aktuálními daty z repozitáře.
+
+Ručně jde totéž přes Netlify → *Add new project* → *Import an existing project* → vybrat tento repozitář
+(nastavení se načte samo z `netlify.toml`) a v *Environment variables* přidat `ADMIN_PASSWORD`.
+
+> **Nenahrávejte ZIP ručně (Netlify Drop).** Ruční nahrání jen vystaví soubory, nic nesestaví.
+> Nespustí se tak serverová část (API s daty) a web se nenačte.
+
+## Rychlý start (lokálně)
 
 ```bash
 cd app

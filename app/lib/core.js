@@ -118,10 +118,10 @@ function createApi(storage) {
 
     const r = `${req.method} ${req.pathname}`;
     if (r === 'GET /api/data') return json(200, publicData());
-    if (r === 'GET /api/me') return json(200, { admin: isAdmin() });
+    if (r === 'GET /api/me') return json(200, { admin: isAdmin(), adminConfigured: !!db.admin });
 
     if (r === 'POST /api/login') {
-      if (!db.admin) return json(503, { error: 'Administrátor zatím není nastaven (chybí počáteční heslo).' });
+      if (!db.admin) return json(503, { error: 'Administrátor zatím není nastaven. Na Netlify přidejte proměnnou prostředí ADMIN_PASSWORD (Project configuration → Environment variables) a web znovu nasaďte.' });
       if (rateLimited(req.ip)) return json(429, { error: 'Příliš mnoho pokusů, zkuste to za minutu.' });
       const b = body();
       if ((b.username || 'admin') !== db.admin.username || !verifyPassword(b.password, db.admin.passwordHash)) {

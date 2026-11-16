@@ -295,5 +295,10 @@
   themeBtn.addEventListener('click', UI.toggleTheme);
 
   load().then(() => { route(); window.addEventListener('hashchange', route); })
-    .catch((e) => { app.innerHTML = `<div class="wrap empty">Nepodařilo se načíst data: ${esc(e.message)}</div>`; });
+    .catch((e) => {
+      app.innerHTML = `<div class="wrap empty"><img src="/img/logo.svg" alt="">
+        <b>Nepodařilo se načíst data</b> (${esc(e.message)}).<br>
+        Server s daty (API) neběží. Na Netlify web nasaďte přes Git nebo tlačítko „Deploy to Netlify“ –
+        ruční nahrání ZIPu spustí jen statické stránky, ne serverovou část.</div>`;
+    });
 })();
