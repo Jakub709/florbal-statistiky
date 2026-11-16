@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administrace – Florbal</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css">
-  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body class="admin">
   <!-- přihlášení -->
   <div id="login" class="login" hidden>
     <div class="login-art">
-      <div class="hero-bg" style="background-image:url('/img/match.jpg')"></div>
+      <div class="hero-bg" style="background-image:url('img/match.jpg')"></div>
       <div class="login-art-text">
         <span class="kicker">Administrace</span>
         <h1>Zapiš<br>výsledky</h1>
@@ -25,14 +25,14 @@
     </div>
     <div class="login-form-wrap">
       <form id="loginForm" class="login-form">
-        <a class="brand" href="/"><img src="/img/logo.svg" alt=""><span>Florbal</span></a>
+        <a class="brand" href="./"><img src="img/logo.svg" alt=""><span>Florbal</span></a>
         <h2>Přihlášení</h2>
         <p class="muted">Přístup jen pro správce týmu.</p>
         <label class="field">Uživatel<input type="text" name="username" value="admin" autocomplete="username" required></label>
         <label class="field">Heslo<input type="password" name="password" autocomplete="current-password" required autofocus></label>
         <div class="form-error" id="loginError" role="alert"></div>
         <button class="btn primary" type="submit">Přihlásit se</button>
-        <a href="/" class="muted small-link">← Zpět na statistiky</a>
+        <a href="./" class="muted small-link">← Zpět na statistiky</a>
       </form>
     </div>
   </div>
@@ -41,17 +41,18 @@
   <div id="panel" hidden>
     <nav class="nav">
       <div class="wrap">
-        <a class="brand" href="/"><img src="/img/logo.svg" alt=""><span>Florbal</span><small>ADMIN</small></a>
+        <a class="brand" href="./"><img src="img/logo.svg" alt=""><span>Florbal</span><small>ADMIN</small></a>
         <div class="nav-links" id="tabs">
           <a href="#terminy" data-tab="terminy">Termíny</a>
           <a href="#hraci" data-tab="hraci">Hráči</a>
           <a href="#nastaveni" data-tab="nastaveni">Nastavení</a>
-          <a href="/" target="_blank" class="admin-link">Zobrazit web ↗</a>
+          <a href="./" target="_blank" class="admin-link">Zobrazit web ↗</a>
         </div>
         <button class="theme-toggle" id="themeBtn" title="Přepnout motiv" aria-label="Přepnout motiv"></button>
         <button class="btn sm dark logout" id="logoutBtn">Odhlásit</button>
       </div>
     </nav>
+    <div class="static-bar" id="staticBar" hidden></div>
     <main class="wrap admin-main" id="view"></main>
   </div>
 
@@ -62,8 +63,9 @@
 
   <div class="toast" id="toast" role="status"></div>
 
-  <script src="/js/ui.js"></script>
-  <script src="/js/stats.js"></script>
-  <script src="/js/admin.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/stats.js"></script>
+  <script src="js/static-api.js"></script>
+  <script src="js/admin.js"></script>
 </body>
 </html>

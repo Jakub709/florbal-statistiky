@@ -56,6 +56,40 @@
     return data;
   }
 
+  /** zveřejněná data ze souboru data.json vedle stránky (statická verze bez serveru) */
+  async function fetchPublished() {
+    const res = await fetch('data.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('Soubor data.json nebyl nalezen.');
+    const d = await res.json();
+    if (!d || !Array.isArray(d.players) || !Array.isArray(d.sessions)) throw new Error('Soubor data.json má neplatný formát.');
+    return d;
+  }
+
+  /**
+   * Načte data: ze serverového API, a když neexistuje (web nahraný jen jako složka), z data.json.
+   * Vrací { data, isStatic }. Při chybě serveru (5xx) statický režim nezapíná.
+   */
+  async function loadData() {
+    let res = null;
+    try { res = await fetch('api/data', { credentials: 'same-origin', cache: 'no-store' }); } catch (_) { res = null; }
+    if (res && res.ok) {
+      try {
+        const d = await res.json();
+        if (d && Array.isArray(d.players)) return { data: d, isStatic: false };
+      } catch (_) { /* není JSON → statická verze */ }
+    }
+    if (res && res.status >= 500) throw new Error(`Chyba serveru ${res.status}`);
+    return { data: await fetchPublished(), isStatic: true };
+  }
+
+  /** nabídne soubor ke stažení */
+  function download(filename, text, type = 'application/json') {
+    const url = URL.createObjectURL(new Blob([text], { type: type + ';charset=utf-8' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: filename });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   // ---- motiv (světlý / tmavý) ----
   const THEME_KEY = 'florbal-theme';
   function applyTheme(t) {
@@ -81,5 +115,5 @@
       <a href="https://commons.wikimedia.org/wiki/File:Floorball_goal.jpg" target="_blank" rel="noopener">branka</a> (Santeri Viinamäki).`;
   }
 
-  window.UI = { esc, pct, pctColor, avatar, initials, displayName, fmtDate, monthShort, dayName, parseDate, plural, api, toggleTheme, SUN, credits };
+  window.UI = { esc, pct, pctColor, avatar, initials, displayName, fmtDate, monthShort, dayName, parseDate, plural, api, loadData, fetchPublished, download, toggleTheme, SUN, credits };
 })();

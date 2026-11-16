@@ -1,4 +1,14 @@
 /* ===== Administrace ===== */
+[hidden] { display: none !important; }
+
+/* lišta statického režimu (web bez serveru) */
+.static-bar { background: var(--surface-2); border-bottom: 1px solid var(--border); font-size: 14px; }
+.static-bar .wrap { display: flex; gap: 14px; align-items: center; justify-content: space-between; padding: 12px 0; flex-wrap: wrap; }
+.static-bar .txt { flex: 1; min-width: 260px; color: var(--muted); }
+.static-bar .txt b { color: var(--text); }
+.static-bar .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.static-bar.changed { background: rgba(255, 201, 74, .18); border-bottom-color: rgba(255, 201, 74, .6); }
+.static-bar.changed .txt { color: var(--text); }
 .login { display: grid; grid-template-columns: 1.1fr 1fr; min-height: 100vh; }
 .login[hidden], #panel[hidden] { display: none; }
 .login-art { position: relative; overflow: hidden; background: var(--navy-900); color: #fff; display: flex; align-items: flex-end; padding: 48px; }

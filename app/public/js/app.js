@@ -6,7 +6,7 @@
   let ST = null; // vypočtené statistiky
   let sort = { key: 'rank', dir: 1 };
 
-  const BALL = '<img class="ball-deco" src="/img/logo.svg" alt="">';
+  const BALL = '<img class="ball-deco" src="img/logo.svg" alt="">';
   const CHEV = '<svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>';
 
   function bar(v) {
@@ -33,7 +33,7 @@
 
     return `
     <header class="hero">
-      <div class="hero-bg" style="background-image:url('/img/hero-arena.jpg')"></div>
+      <div class="hero-bg" style="background-image:url('img/hero-arena.jpg')"></div>
       <div class="wrap fade-in">
         <span class="kicker">Sezóna ${esc(s.season)}</span>
         <h1>${esc(s.title)} <span>${esc((s.season || '').replace(/^20(\d\d)/, '$1'))}</span></h1>
@@ -148,7 +148,7 @@
   // ---------------- HRÁČ ----------------
   function viewPlayer(id) {
     const p = ST.players.find((x) => x.id === id);
-    if (!p) return `<div class="wrap empty"><img src="/img/logo.svg" alt="">Hráč nenalezen. <a href="#/">Zpět na přehled</a></div>`;
+    if (!p) return `<div class="wrap empty"><img src="img/logo.svg" alt="">Hráč nenalezen. <a href="#/">Zpět na přehled</a></div>`;
     const attended = p.history.filter((h) => h.w !== null);
     const best = attended.reduce((b, h) => (!b || h.w / (h.w + h.l) > b.w / (b.w + b.l) ? h : b), null);
     const rows = [...p.history].reverse().map((h) => {
@@ -167,7 +167,7 @@
 
     return `
     <header class="banner">
-      <div class="hero-bg" style="background-image:url('/img/player.jpg');background-position:center 25%"></div>
+      <div class="hero-bg" style="background-image:url('img/player.jpg');background-position:center 25%"></div>
       <div class="wrap fade-in">
         <a class="back" href="#/">← Zpět na přehled</a>
         <div class="player-head" style="margin-top:18px">
@@ -230,7 +230,7 @@
     }).join('');
     return `
     <header class="banner">
-      <div class="hero-bg" style="background-image:url('/img/goal.jpg');background-position:center 60%"></div>
+      <div class="hero-bg" style="background-image:url('img/goal.jpg');background-position:center 60%"></div>
       <div class="wrap fade-in"><span class="kicker">Sezóna ${esc(ST.settings.season)}</span><h1>Termíny</h1>
       <p>${ST.sessions.length} ${plural(ST.sessions.length, 'hrací den', 'hrací dny', 'hracích dnů')} · ${ST.totalGames} zápasů. U každého hráče je počet výher : proher.</p></div>
     </header>
@@ -242,7 +242,7 @@
     const min = ST.settings.minAttendance;
     return `
     <header class="banner">
-      <div class="hero-bg" style="background-image:url('/img/match.jpg');background-position:center 70%"></div>
+      <div class="hero-bg" style="background-image:url('img/match.jpg');background-position:center 70%"></div>
       <div class="wrap fade-in"><span class="kicker">Vysvětlivky</span><h1>Jak počítáme</h1><p>Stejné vzorce jako v původní Excelové tabulce.</p></div>
     </header>
     <section class="block wrap">
@@ -267,7 +267,7 @@
 
   // ---------------- router ----------------
   async function load() {
-    const data = await api('/api/data');
+    const { data } = await UI.loadData();
     ST = window.FlorbalStats.compute(data);
     document.getElementById('brandTitle').textContent = ST.settings.title;
     document.getElementById('brandSeason').textContent = ST.settings.season;
@@ -296,9 +296,8 @@
 
   load().then(() => { route(); window.addEventListener('hashchange', route); })
     .catch((e) => {
-      app.innerHTML = `<div class="wrap empty"><img src="/img/logo.svg" alt="">
+      app.innerHTML = `<div class="wrap empty"><img src="img/logo.svg" alt="">
         <b>Nepodařilo se načíst data</b> (${esc(e.message)}).<br>
-        Server s daty (API) neběží. Na Netlify web nasaďte přes Git nebo tlačítko „Deploy to Netlify“ –
-        ruční nahrání ZIPu spustí jen statické stránky, ne serverovou část.</div>`;
+        Zkontrolujte, že je ve složce webu soubor <code>data.json</code>.</div>`;
     });
 })();

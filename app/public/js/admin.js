@@ -6,6 +6,39 @@
   const view = $('#view');
   const dlg = $('#sessionDlg');
   let DATA = null, ST = null;
+  let STATIC = null; // statický režim (web bez serverové části) – viz static-api.js
+  const call = (path, opts) => (STATIC ? STATIC.request(path, opts) : api(path, opts));
+
+  // ---------- statický režim ----------
+  function renderStaticBar() {
+    if (!STATIC) return;
+    const bar = $('#staticBar');
+    const changed = STATIC.hasChanges();
+    bar.hidden = false;
+    bar.className = 'static-bar' + (changed ? ' changed' : '');
+    bar.innerHTML = `<div class="wrap">
+      <div class="txt">${changed
+        ? '<b>Máte nezveřejněné změny.</b> Stáhněte <code>data.json</code>, nahraďte jím stejnojmenný soubor ve složce webu a složku znovu nahrajte na Netlify.'
+        : '<b>Verze bez serveru</b> (web nahraný jako složka). Změny se ukládají jen v tomto prohlížeči, dokud je nezveřejníte novým <code>data.json</code>.'}</div>
+      <div class="acts">
+        <button class="btn sm primary" id="dlData">⬇ Stáhnout data.json</button>
+        ${changed ? '<button class="btn sm" id="discard">Zahodit změny</button>' : ''}
+      </div></div>`;
+    $('#dlData').onclick = () => { UI.download('data.json', STATIC.exportJson()); toast('data.json stažen – nahraďte jím soubor ve složce webu'); };
+    const d = $('#discard');
+    if (d) d.onclick = () => guard(async () => {
+      if (!confirm('Zahodit všechny nezveřejněné změny a vrátit se k datům, která jsou na webu?')) return;
+      STATIC.discard(); await reload(); route(); toast('Změny zahozeny');
+    });
+  }
+  function toCsv(data) {
+    const sessions = [...data.sessions].sort((a, b) => a.date.localeCompare(b.date));
+    const head = ['Hráč', ...sessions.flatMap((s) => [`${s.date} výhry`, `${s.date} prohry`])];
+    const rows = data.players.map((p) => [p.name, ...sessions.flatMap((s) => { const r = s.results[p.id]; return r ? [r.w, r.l] : ['', '']; })]);
+    rows.unshift(['Počet zápasů', ...sessions.flatMap((s) => [s.games, ''])]);
+    const q = (v) => (/[;"\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+    return '﻿' + [head, ...rows].map((r) => r.map(q).join(';')).join('\r\n');
+  }
 
   // ---------- pomocné ----------
   let toastTimer;
@@ -15,8 +48,9 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = 'toast'; }, 2800);
   }
   async function reload() {
-    DATA = await api('/api/data');
+    DATA = await call('api/data');
     ST = window.FlorbalStats.compute(DATA);
+    renderStaticBar();
   }
   function addDays(iso, n) {
     const d = UI.parseDate(iso); d.setDate(d.getDate() + n);
@@ -45,12 +79,12 @@
     const f = new FormData(e.target);
     $('#loginError').textContent = '';
     try {
-      await api('/api/login', { method: 'POST', body: { username: f.get('username'), password: f.get('password') } });
+      await call('api/login', { method: 'POST', body: { username: f.get('username'), password: f.get('password') } });
       e.target.reset();
       showPanel();
     } catch (err) { $('#loginError').textContent = err.message; }
   });
-  $('#logoutBtn').addEventListener('click', async () => { await api('/api/logout', { method: 'POST' }); showLogin(); });
+  $('#logoutBtn').addEventListener('click', async () => { await call('api/logout', { method: 'POST' }); showLogin(); });
 
   // ---------- TERMÍNY ----------
   function viewSessions() {
@@ -221,7 +255,7 @@
       const name = $('#quickName', form).value.trim();
       if (!name) return;
       Object.assign(results, collect());
-      const p = await api('/api/players', { method: 'POST', body: { name } });
+      const p = await call('api/players', { method: 'POST', body: { name } });
       DATA.players.push(p);
       results[p.id] = { w: 0, l: getGames() };
       rowsEl.innerHTML = playerRows(); $('#quickName', form).value = '';
@@ -242,7 +276,7 @@
         const clash = DATA.sessions.find((s) => s.date === body.date && s.id !== id);
         if (clash && !confirm(`Na ${fmtDate(body.date)} už termín existuje. Uložit i tak jako další termín?`)) return;
         if (existing) await api(`/api/sessions/${id}`, { method: 'PUT', body });
-        else await api('/api/sessions', { method: 'POST', body });
+        else await call('api/sessions', { method: 'POST', body });
         dlg.close(); await reload(); viewSessions();
         toast(existing ? 'Termín uložen' : 'Nový termín přidán');
       });
@@ -283,7 +317,7 @@
       e.preventDefault();
       guard(async () => {
         const name = e.target.name.value;
-        await api('/api/players', { method: 'POST', body: { name } });
+        await call('api/players', { method: 'POST', body: { name } });
         await reload(); viewPlayers(); toast('Hráč přidán');
       });
     });
@@ -336,23 +370,35 @@
           <div><button class="btn primary">Uložit</button></div>
         </form>
 
+        ${STATIC ? `
+        <div class="card pad">
+          <h3>Jak zveřejnit změny</h3>
+          <ol class="muted" style="margin:0;padding-left:20px;display:grid;gap:6px">
+            <li>Zapište termíny, hráče nebo nastavení – ukládají se v tomto prohlížeči.</li>
+            <li>Klikněte na <b>Stáhnout data.json</b> (nahoře v liště).</li>
+            <li>Staženým souborem nahraďte <code>data.json</code> ve složce webu.</li>
+            <li>Na Netlify otevřete projekt → <b>Deploys</b> a přetáhněte tam celou složku znovu.</li>
+          </ol>
+          <p class="muted" style="margin:0">Tato verze nemá přihlášení – změny ale vidí jen ten, kdo je zapsal, dokud nenahraje novou složku na Netlify (k tomu je potřeba účet na Netlify).</p>
+        </div>` : `
         <form class="card pad" id="pwdForm" autocomplete="off">
           <h3>Změna hesla</h3>
           <label class="field">Současné heslo<input type="password" name="current" required autocomplete="current-password"></label>
           <label class="field">Nové heslo (min. 8 znaků)<input type="password" name="next" required minlength="8" autocomplete="new-password"></label>
           <label class="field">Nové heslo znovu<input type="password" name="next2" required minlength="8" autocomplete="new-password"></label>
           <div><button class="btn primary">Změnit heslo</button></div>
-        </form>
+        </form>`}
 
         <div class="card pad">
           <h3>Záloha a export</h3>
-          <p class="muted" style="margin:0">Data jsou uložena v souboru <code>data/db.json</code>. Pravidelně si stahujte zálohu.</p>
+          <p class="muted" style="margin:0">${STATIC ? 'Zálohu i tabulku pro Excel stáhnete z dat v tomto prohlížeči.' : 'Data jsou uložena na serveru. Pravidelně si stahujte zálohu.'}</p>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <a class="btn dark" href="/api/export.json">⬇ Záloha (JSON)</a>
-            <a class="btn" href="/api/export.csv">⬇ Tabulka pro Excel (CSV)</a>
+            ${STATIC
+              ? '<button class="btn dark" id="expJson">⬇ Záloha (JSON)</button><button class="btn" id="expCsv">⬇ Tabulka pro Excel (CSV)</button>'
+              : '<a class="btn dark" href="api/export.json">⬇ Záloha (JSON)</a><a class="btn" href="api/export.csv">⬇ Tabulka pro Excel (CSV)</a>'}
           </div>
           <h3 style="margin-top:8px">Obnova ze zálohy</h3>
-          <p class="muted" style="margin:0">Nahraje dříve stažený soubor zálohy (JSON) a <b>nahradí jím všechny současné hráče, termíny i nastavení</b>. Současný stav se předtím automaticky uloží do <code>data/zalohy/</code>.</p>
+          <p class="muted" style="margin:0">Nahraje dříve stažený soubor zálohy (JSON) a <b>nahradí jím všechny současné hráče, termíny i nastavení</b>.${STATIC ? '' : ' Současný stav se předtím automaticky uloží.'}</p>
           <div><label class="btn danger" style="cursor:pointer">⬆ Obnovit ze zálohy…<input type="file" id="restoreFile" accept=".json,application/json" hidden></label></div>
         </div>
       </div>`;
@@ -361,7 +407,7 @@
       e.preventDefault();
       const f = e.target;
       guard(async () => {
-        await api('/api/settings', { method: 'PUT', body: { title: f.title.value, season: f.season.value, subtitle: f.subtitle.value } });
+        await call('api/settings', { method: 'PUT', body: { title: f.title.value, season: f.season.value, subtitle: f.subtitle.value } });
         await reload(); toast('Nastavení uloženo');
       });
     });
@@ -379,7 +425,7 @@
     range.addEventListener('input', preview); preview();
     $('#rankForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      guard(async () => { await api('/api/settings', { method: 'PUT', body: { minAttendance: Number(range.value) } }); await reload(); toast('Pravidla uložena'); });
+      guard(async () => { await call('api/settings', { method: 'PUT', body: { minAttendance: Number(range.value) } }); await reload(); toast('Pravidla uložena'); });
     });
     $('#restoreFile').addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -391,17 +437,23 @@
         const np = Array.isArray(backup.players) ? backup.players.length : '?';
         const ns = Array.isArray(backup.sessions) ? backup.sessions.length : '?';
         if (!confirm(`Obnovit ze zálohy „${file.name}“?\n\nZáloha obsahuje ${np} hráčů a ${ns} termínů.\nSoučasná data (${DATA.players.length} hráčů, ${DATA.sessions.length} termínů) budou nahrazena.`)) return;
-        const r = await api('/api/restore', { method: 'POST', body: backup });
+        const r = await call('api/restore', { method: 'POST', body: backup });
         await reload(); viewSettings();
         toast(`Obnoveno: ${r.players} hráčů, ${r.sessions} termínů`);
       });
     });
+    if (STATIC) {
+      const day = new Date().toISOString().slice(0, 10);
+      $('#expJson').onclick = () => UI.download(`florbal-zaloha-${day}.json`, STATIC.exportJson());
+      $('#expCsv').onclick = () => UI.download(`florbal-${day}.csv`, toCsv(DATA), 'text/csv');
+      return;
+    }
     $('#pwdForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const f = e.target;
       if (f.next.value !== f.next2.value) { toast('Nová hesla se neshodují', true); return; }
       guard(async () => {
-        await api('/api/password', { method: 'POST', body: { current: f.current.value, next: f.next.value } });
+        await call('api/password', { method: 'POST', body: { current: f.current.value, next: f.next.value } });
         f.reset(); toast('Heslo změněno');
       });
     });
@@ -421,16 +473,32 @@
   themeBtn.innerHTML = UI.SUN;
   themeBtn.addEventListener('click', UI.toggleTheme);
 
-  api('/api/me')
-    .then((r) => {
-      if (r.admin) return showPanel();
+  // Start: se serverovou částí → přihlášení; bez ní (web nahraný jako složka) → statický režim.
+  (async () => {
+    let res = null, me = null;
+    try { res = await fetch('api/me', { credentials: 'same-origin', cache: 'no-store' }); } catch (_) { res = null; }
+    if (res && res.ok) { try { me = await res.json(); } catch (_) { me = null; } }
+
+    if (me && typeof me.admin === 'boolean') {
+      if (me.admin) return showPanel();
       showLogin();
-      if (r.adminConfigured === false) {
+      if (me.adminConfigured === false) {
         $('#loginError').textContent = 'Administrátor zatím není nastaven. Na Netlify přidejte proměnnou prostředí ADMIN_PASSWORD (Project configuration → Environment variables) a web znovu nasaďte.';
       }
-    })
-    .catch(() => {
+      return;
+    }
+    if (res && res.status >= 500) {
       showLogin();
-      $('#loginError').textContent = 'Server s daty neodpovídá. Pokud jde o web na Netlify, nasaďte ho přes Git nebo tlačítko „Deploy to Netlify“, ne ručním nahráním ZIPu (to nespustí serverovou část).';
-    });
+      $('#loginError').textContent = `Server hlásí chybu (${res.status}). Zkuste to prosím později.`;
+      return;
+    }
+    try {
+      STATIC = window.StaticApi.create(await UI.fetchPublished());
+      $('#logoutBtn').hidden = true;
+      await showPanel();
+    } catch (e) {
+      showLogin();
+      $('#loginError').textContent = `Nenašel jsem serverovou část ani soubor data.json (${e.message}).`;
+    }
+  })();
 })();
